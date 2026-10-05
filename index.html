@@ -108,19 +108,48 @@
 
 <script>
 
-function askQuestion() {
+async function askQuestion() {
 
     const question = document.getElementById("question").value;
+    const answer = document.getElementById("answer");
 
     if (question.trim() === "") {
-        document.getElementById("answer").innerText =
-            "Skriv et spørgsmål først.";
+        answer.innerText = "Skriv et spørgsmål først.";
         return;
     }
 
-    document.getElementById("answer").innerText =
-        "Vi har modtaget dit spørgsmål: " + question;
+    answer.innerText = "Tænker...";
 
+    try {
+
+        const response = await fetch("/api/chat", {
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                question: question
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            answer.innerText =
+                "Der opstod en fejl: " + (data.error || "Ukendt fejl");
+            return;
+        }
+
+        answer.innerText = data.answer;
+
+    } catch (error) {
+
+        answer.innerText =
+            "Kunne ikke kontakte AI'en.";
+
+    }
 }
 
 </script>
